@@ -1,0 +1,1031 @@
+openapi: 3.0.1
+info:
+  title: Password Manager
+  description: Сервис безопасного хранения паролей и любой другой текстовой информации
+  contact:
+    email: elemabor@gmail.com
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- name: Пользователь
+  description: Методы для взаимодействия с сущностью пользователя
+- name: Каталог
+  description: Методы для взаимодействия с сущностью каталога
+- name: Пользовательская запись
+  description: Методы для взаимодействия с добавленной информацией о пользователе
+- name: Сервер
+  description: Методы для взаимодействия с сущностью сервера
+paths:
+  /user/register:
+    post:
+      tags:
+      - Пользователь
+      summary: Регистрация нового пользователя
+      description: Данный метод предназначен для регистрации нового пользователя.
+        На вход принимается логин и пароль (почта по желанию). При успешной регистрации
+        пользователя возвращается его токен доступа, который можно использовать к
+        методам требующим авторизации.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              required:
+              - email
+              - login
+              - password
+              type: object
+              properties:
+                login:
+                  type: string
+                  description: Логин пользователя
+                  example: user123
+                email:
+                  type: string
+                  description: Электронная почта пользователя
+                  example: user@mail.ru
+                password:
+                  type: string
+                  description: Пароль пользователя
+                  example: password123
+        required: true
+      responses:
+        201:
+          description: Пользователь успешно создан
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiZTEwYWE1Y2ItY2FiZC00ZDdmLWE2MmUtNTZlYjE2NDdiY2M3Iiwic2Vzc2lvbl9pZCI6IjdjOGVlMzEyLTIzYzEtNDliMy04YWJlLTRiZWUzOGMzNTEyMSIsImZ1bGxfbmFtZSI6Ilx1MDQxYVx1MDQ0M1x1MDQzYlx1MDQ0Y1x1MDQzYVx1MDQzOFx1MDQzZCBcdTA0MThcdTA0M2JcdTA0NGNcdTA0NGYiLCJyb2xlIjoidXNlciIsImV4cCI6MTYxNzM5NTE1OH0.3-ank157hAvxVvE9DvfauZiY9WZ3nwk7dW-2u2Soxfg
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        409:
+          description: Указанный логин или Email уже используется!
+          content:
+            '*/*':
+              schema:
+                type: string
+                example: Указанный логин или Email уже используется!
+        500:
+          description: Что-то пошло не так
+          content: {}
+      x-codegen-request-body-name: body
+  /user/login:
+    post:
+      tags:
+      - Пользователь
+      summary: Аутентификация пользователя
+      description: Метод для аутентификации пользователя на сервере. Аутентификация
+        происходит по логину и паролю пользователя. После успешной авторизации пользователь
+        получает токен доступа к своему аккаунту, который можно использовать использовать
+        к методам требующим авторизации.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              required:
+              - login
+              - password
+              type: object
+              properties:
+                login:
+                  type: string
+                  description: Логин или пароль пользователя
+                  example: user123
+                password:
+                  type: string
+                  description: Пароль пользователя
+                  example: password123
+        required: true
+      responses:
+        200:
+          description: Пользователь успешно авторизован
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiZTEwYWE1Y2ItY2FiZC00ZDdmLWE2MmUtNTZlYjE2NDdiY2M3Iiwic2Vzc2lvbl9pZCI6IjdjOGVlMzEyLTIzYzEtNDliMy04YWJlLTRiZWUzOGMzNTEyMSIsImZ1bGxfbmFtZSI6Ilx1MDQxYVx1MDQ0M1x1MDQzYlx1MDQ0Y1x1MDQzYVx1MDQzOFx1MDQzZCBcdTA0MThcdTA0M2JcdTA0NGNcdTA0NGYiLCJyb2xlIjoidXNlciIsImV4cCI6MTYxNzM5NTE1OH0.3-ank157hAvxVvE9DvfauZiY9WZ3nwk7dW-2u2Soxfg
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      x-codegen-request-body-name: body
+  /user/update:
+    put:
+      tags:
+      - Пользователь
+      summary: Обновить данные о пользователе
+      description: 'Метод для обновления учетных данных аккаунта пользователя. Для
+        использования данного метода требуется наличие токена доступа пользователя.
+        Принимаемые параметры данного метода: поля, которые необходимо изменить, и
+        их новое значение.'
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Новая почта пользователя
+                  example: user@mail.ru
+                password:
+                  type: string
+                  description: Новый пароль пользователя
+                  example: password123
+        required: true
+      responses:
+        200:
+          description: Данные пользователя успешно обновлены
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        409:
+          description: Указанный Email уже используется!
+          content:
+            '*/*':
+              schema:
+                type: string
+                example: Указанный логин или Email уже используется!
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+  /user/delete:
+    delete:
+      tags:
+      - Пользователь
+      summary: Удаление аккаунта пользователя
+      description: Данный метод удаляет все данные пользователя на сервере. Для использования
+        данного метода необходим токен авторизации пользователя.
+      responses:
+        200:
+          description: Пользователь успешно удален
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      deprecated: false
+      security:
+      - Bearer: []
+  /user:
+    get:
+      tags:
+      - Пользователь
+      summary: Получение актуальных данных о пользователе
+      description: Метод для получения актуальных данных пользователя. На входе принимается
+        токен авторизации пользователя. Данный метод необходимо применять после обновления
+        данных пользователя для последующей актуализации на клиентской части.
+      responses:
+        200:
+          description: Данные были успешно получены
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+  /catalog:
+    get:
+      tags:
+      - Каталог
+      summary: Получение каталогов пользователя
+      description: Данный метод позволяет получить актуальный список каталогов пользователя
+        с хранящейся в нем информацией. Для использования данного метода необходим
+        токен авторизации пользователя и используемый пароль для данного каталога.
+      responses:
+        200:
+          description: Каталоги пользователя успешно найдены
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: object
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+    post:
+      tags:
+      - Каталог
+      summary: Создать новый каталог с паролями
+      description: Данный метод создает новый каталог, в котором можно хранить различную
+        текстовую информацию. Для использования данного метода необходим токен авторизации
+        пользователя.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              required:
+              - name
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Название для создаваемого каталога
+                  example: Важное
+                color:
+                  type: string
+                  description: Цвет отображения для создаваемого каталога
+                  example: red
+        required: true
+      responses:
+        201:
+          description: Каталог успешно создан
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+  /catalog/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: ID конкретного каталога
+    get:
+      tags:
+      - Каталог
+      summary: Получить пользовательские записи в конкретном каталоге
+      description: Данный метод предназначен для получения пользовательских записей
+        в конкретном каталоге. Для использования данного метода необходим токен авторизации
+        пользователя и используемый пароль для данного каталога.
+      responses:
+        200:
+          description: Записи пользователя успешно получены
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: object
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+    put:
+      tags:
+      - Каталог
+      summary: Изменить данные о каталоге
+      description: Данный метод позволяет изменять информацию об указанном каталоге
+        (название каталога, цвет отображаемый в списке каталогов, позиция данного
+        каталога в списке каталогов пользователя). Для использования данного метода
+        необходим токен авторизации пользователя и используемый пароль для данного
+        каталога.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Название для обновляемого каталога
+                  example: Важное
+                color:
+                  type: string
+                  description: Цвет отображения для обновляемого каталога
+                  example: red
+                position:
+                  type: integer
+                  description: Новая порядковая позиция в списке каталогов
+                  example: 1
+        required: true
+      responses:
+        200:
+          description: Каталог успешно обновлен
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Каталог
+      summary: Удаление каталога пользователя
+      description: Данный метод предназначен для удаления указанного каталога со всеми
+        входящими в него данными. Для использования данного метода необходим токен
+        авторизации пользователя и используемый пароль для данного каталога.
+      responses:
+        200:
+          description: Каталог успешно удален
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+  /catalog/filter:
+    post:
+      tags:
+      - Каталог
+      summary: Возвращает список записей пользователя удовлетворяющих данному фильтру
+      description: Данный метод позволяет получить пользовательские записи подходящие
+        под заданные параметры. Для использования данного метода необходим токен авторизации
+        пользователя и используемый пароль для данного каталога.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Похожее название которое необходимо найти
+                  example: ВКонтакте
+                description:
+                  type: string
+                  description: Похожее описание которое необходимо найти
+                  example: "6544"
+                hiden:
+                  type: boolean
+                  description: Скрыта ли запись необходимую найти
+                  example: false
+        required: true
+      responses:
+        200:
+          description: Записи пользователя успешно получены
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: object
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+      x-codegen-request-body-name: body
+  /catalog/{id}/toogle_hide:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: ID конкретного каталога
+    put:
+      tags:
+      - Каталог
+      summary: Переключает видимость каталога
+      description: Данный метод позволяет скрыть/отобразить в общем списке данный
+        каталог. Для использования данного метода необходим токен авторизации пользователя
+        и используемый пароль для данного каталога.
+      responses:
+        200:
+          description: Каталог успешно обновлен
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+  /catalog/{id}/access:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: ID конкретного каталога
+    post:
+      tags:
+      - Каталог
+      summary: Установить/обновить пароль доступа к каталогу
+      description: Данный метод позволяет установить/обновить пароль для доступа к
+        указанному каталогу. Для использования данного метода необходим токен авторизации
+        пользователя и используемый пароль для данного каталога.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                phrase:
+                  type: string
+                  description: Кодовое слово для шифрования данных в каталоге
+                  example: Лунтик
+                password:
+                  type: string
+                  description: Пароль доступа к записям находящимся в данном каталоге
+                  example: password123
+        required: true
+      responses:
+        201:
+          description: Доступ к каталогу успешно создан
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Каталог
+      summary: Удалить данные доступа к каталогу (сделать открытым)
+      description: Данный метод позволяет удалить пароль каталога, для последующего
+        открытого доступа к нему. Для использования данного метода необходим токен
+        авторизации пользователя и используемый пароль для данного каталога.
+      responses:
+        200:
+          description: Доступ к каталогу открыт
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      - CatalogPassword: []
+  /user_entry:
+    get:
+      tags:
+      - Пользовательская запись
+      summary: Получение записей пользователя удовлетворяющих параметру поиска
+      description: Данный метод предназначен для получения списка хранимой информации
+        пользователя подходящих под параметры поиска. Для использования данного метода
+        необходим токен авторизации пользователя.
+      parameters: 
+        - in: query
+          name: key
+          schema:
+            type: string
+          description: Значение похожего ключа используемый в поиске
+          example: вк
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Похожее описание которое необходимо найти
+          example: "6544"
+        - in: query
+          name: value
+          schema:
+            type: string
+          description: Похожее значение хранимаого ключа необходимого для
+            поиска
+          example: password
+        - in: query
+          name: hiden
+          schema:
+            type: boolean
+          description: Найти записи у которых скрыта/открыта пользовательская
+            запись
+          example: false
+      responses:
+        200:
+          description: Пользовательские записи успешно найдены
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: object
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+    post:
+      tags:
+      - Пользовательская запись
+      summary: Создание новой пользовательской записи
+      description: Данный метод предназначен для создания новой хранимой информации
+        пользователем. Для использования данного метода необходим токен авторизации
+        пользователя.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: Название ключа пользовательской записи
+                  example: Пароль от ВК
+                description:
+                  type: string
+                  description: Описание пользовательской записи (используется для
+                    поиска)
+                  example: Пароль от главного аккаунта вк (6544)
+                value:
+                  type: string
+                  description: Значение хранимое под данным ключем
+                  example: password123
+                hiden:
+                  type: boolean
+                  description: Скрывать ли данную запись из общего списка
+                  default: false
+        required: true
+      responses:
+        201:
+          description: Пользовательская запись пользователя успешно создан
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+  /user_entry/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: ID конкретной записи пользователя
+    get:
+      tags:
+      - Пользовательская запись
+      summary: Получения подробной информации о конкретной пользовательской записи
+      description: Данный метод позволяет получить информацию об указанной хранимой
+        информации пользователя. Для использования данного метода необходим токен
+        авторизации пользователя.
+      responses:
+        200:
+          description: Пользовательские записи успешно найдены
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserEntry'
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+    put:
+      tags:
+      - Пользовательская запись
+      summary: Обновление пользовательской записи
+      description: Данный метод необходим для обновления хранимой информации пользователя.
+        Для использования данного метода необходим токен авторизации пользователя.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: Название ключа пользовательской записи
+                  example: Новый пароль от ВК
+                description:
+                  type: string
+                  description: Описание пользовательской записи (используется для
+                    поиска)
+                  example: Новый пароль от главного аккаунта вк (6544)
+                value:
+                  type: string
+                  description: Новое значение хранимое под данным ключем
+                  example: password123
+                hiden:
+                  type: boolean
+                  description: Скрывать ли данную запись из общего списка
+                  default: false
+                phrase:
+                  type: string
+                  description: Новая фраза для шифрования пароля
+                  example: Лунтик123
+        required: true
+      responses:
+        200:
+          description: Пользовательская запись пользователя успешно обновлена
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Пользовательская запись
+      summary: Удаление пользовательской записи
+      description: Данный метод предназначен для удаления конкретной информации хранимой
+        пользователем. Для использования данного метода необходим токен авторизации
+        пользователя.
+      responses:
+        200:
+          description: Пользовательская запись пользователя успешно удалена
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+  /user_entry/{id}/move:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: ID конкретной пользовательской записи
+    post:
+      tags:
+      - Пользовательская запись
+      summary: Переместить пользовательскую запись в новый каталог
+      description: Данный метод позволяет переместить конкретную информацию хранимую
+        пользователем в указанный каталог. Для доступа к указанному каталогу необходимо
+        заранее ввести пароль. Для использования данного метода необходим токен авторизации
+        пользователя.
+      parameters:
+        - in: query
+          name: catalogId
+          schema:
+            type: integer
+          description: Значение ID каталога в который необходимо переместить запись
+          required: true
+      responses:
+        200:
+          description: Запись успешно перемещена
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        409:
+          description: Невозможно переместить в данный каталог!
+          content:
+            '*/*':
+              schema:
+                type: string
+                example: Невозможно переместить в данный каталог!
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+  /server/echo:
+    get:
+      tags:
+      - Сервер
+      summary: Проверка доступности сервера
+      description: Данный метод предназначен для проверки доступа к серверу. Если
+        пользователь решит сменить сервер на личный, то данный метод позволит проверить
+        правильность его настройки
+      parameters: 
+        - in: query
+          name: ip
+          schema:
+            type: string
+          description: IP адрес сервера для проверки доступа
+          example: 127.0.0.1
+          required: true
+        - in: query
+          name: port
+          schema:
+            type: integer
+          description: Порт сервера для проверки доступа
+          example: 6798
+          required: true
+        - in: query
+          name: version
+          schema:
+            type: string
+          description: Версия сервера (должно совпадать с клиентом)
+          example: 1.0.0
+          required: true
+      responses:
+        200:
+          description: Сервер по данному адресу и порту доступен
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      x-codegen-request-body-name: body
+  /server/state:
+    get:
+      tags:
+      - Сервер
+      summary: Получение актуальной информации о состоянии сервера
+      description: Данный метод позволяет получить актуальную информацию о состоянии
+        используемого сервера.
+      responses:
+        200:
+          description: Сервер по данному адресу и порту доступен
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: integer
+                    description: Время работы сервера в UNIX формате
+                    example: 5834875346
+                  version:
+                    type: string
+                    description: Версия сервера
+                    example: 1.0.0
+        500:
+          description: Что-то пошло не так
+          content: {}
+  /server/backup:
+    get:
+      tags:
+      - Сервер
+      summary: Получение резервной копии
+      description: Данный метод предназначен для получения резервной копии пользователя
+        со всеми его данными. В случае смены сервера резервная копия позволит не потерять
+        данные при переносе. Для использования данного метода необходим токен авторизации
+        пользователя.
+      responses:
+        200:
+          description: Резервная копия пользователя успешно получена
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Backup'
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+    post:
+      tags:
+      - Сервер
+      summary: Восстановление из резервной копии
+      description: Данный метод предназначен для восстановления пользовательских данных
+        на сервер из указанной резервной копии. В случае смены сервера резервная копия
+        позволит не потерять данные при переносе. Для использования данного метода
+        необходим токен авторизации пользователя.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Backup'
+        required: true
+      responses:
+        200:
+          description: Резервная копия пользователя успешно получена
+          content: {}
+        400:
+          description: Ошибка в теле запроса
+          content: {}
+        401:
+          description: Не указан токен авторизации
+          content: {}
+        500:
+          description: Что-то пошло не так
+          content: {}
+      security:
+      - Bearer: []
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    User:
+      title: Пользователь
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Идентификатор пользователя (INT)
+          format: int64
+          example: 1
+        uuid:
+          type: string
+          description: Идентификатор пользователя (UUID)
+          format: uuid
+          example: d867b2bd-821d-49ef-9d5f-6d06f95dbf99
+        login:
+          type: string
+          description: Логин пользователя
+          example: user123
+        email:
+          type: string
+          description: Почта пользователя
+          example: user@mail.ru
+        password:
+          type: string
+          description: Хэш пароля пользователя (SHA512)
+          example: 8ed388e4137ba6656fa7c54f08fe99ccac86350954029681b3362192905278e4
+      description: Модель пользователя
+    UserEntry:
+      title: Запись пользователя
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Идентификатор записи пользователя (INT)
+          format: int64
+          example: 1
+        uuid:
+          type: string
+          description: Идентификатор записи пользователя (UUID)
+          format: uuid
+          example: d867b2bd-821d-49ef-9d5f-6d06f95dbf99
+        key:
+          type: string
+          description: Название записи пользователя
+          example: Пароль от ВКонтакте
+        description:
+          type: string
+          description: Описание экземпляра записи пользователя
+          example: Пароль от основной записи ВКонтакте (на окончание 6544)
+        value:
+          type: string
+          description: Значение хранимое под данным названием
+          example: RDtycyBVUybyfyTVDCTYbgvYGVNunhvTRXDcvtrfbcVYGcvtrXTRFb
+        hiden:
+          type: boolean
+          description: Скрыта ли данная запись
+          default: false
+        phrase:
+          type: string
+          description: Фраза для шифрования данной записи
+          example: Лунтик
+      description: Модель записи пользователя (то что хранится в каталогах)
+    Catalog:
+      title: Каталог пользовательских записей
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Идентификатор записи пользователя (INT)
+          format: int64
+          example: 1
+        uuid:
+          type: string
+          description: Идентификатор записи пользователя (UUID)
+          format: uuid
+          example: d867b2bd-821d-49ef-9d5f-6d06f95dbf99
+        name:
+          type: string
+          description: Название отображаемое в списке каталогов пользователя
+          example: Важное
+        position:
+          type: integer
+          description: Позиция в списке каталогов пользователя
+          format: int64
+          example: 4
+        color:
+          type: string
+          description: Цвет устанавливаемый каталогу для лучшего ориентирования
+          example: red
+        entries:
+          type: array
+          description: Список пользовательских записей относящихся к данному списку
+          items:
+            type: object
+      description: Модель хранящая пользовательские записи
+    Backup:
+      title: Резервная копия пользователя
+      type: object
+      properties:
+        create_time:
+          type: string
+          description: Время создания резервной копии
+          example: 10-03-2021 10:29:57
+        version:
+          type: string
+          description: Версия сервера при создании резервной копии
+          example: 1.0.0
+        data:
+          type: array
+          description: Список пользовательских записей
+          items:
+            type: object
+      description: Описание полей модели резервной копии для данных пользователей
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      name: Authorization
+      in: header
+    CatalogPassword:
+      type: apiKey
+      name: CatalogPassword
+      in: header
